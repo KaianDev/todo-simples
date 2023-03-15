@@ -1,0 +1,17 @@
+@media (max-width: 500px){
+    main {
+        min-width: 400px;
+    }
+}
+
+@media (max-width: 425px){
+    main {
+        min-width: 360px;
+    }
+}
+
+@media (max-width:360px) {
+    main {
+        min-width: 330px;
+    }
+}

@@ -1,0 +1,136 @@
+body {
+    background-image: url(../components/image/bg.jpg);
+    background-position: 0;
+    min-height: 100vh;
+    background-size: cover;
+    font-family: Helvetica, sans-serif;
+    color: #333;
+    padding: 50px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+main {
+    background-color: #ffffffb9;
+    min-width: 450px;
+    border-radius: 15px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 20px;
+}
+
+button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border: 2px solid #404062;
+    color: #404062;
+    font-weight: bold;
+    background-color: #ffffff;
+    max-width: 100px;
+    transition: .5s;
+}
+
+button > i {
+    color: #404062;
+    pointer-events: none;
+}
+
+button:hover {
+    background-color: #404062;
+    color: #ffffff;
+}
+
+button:hover i {
+    color: #ffffff;
+}
+
+input {
+    padding: 5px;
+}
+
+footer {
+    font-style: italic;
+    font-size: .8rem;
+    border-radius: 5px;
+    padding: 5px;
+    text-align: center;
+    background-color: #ffffffb9;
+    margin-bottom: 20px;
+}
+
+/* Header */
+
+header h1 {
+    padding: 0.5rem 1rem 1rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Forms */
+
+#todo-form,
+#edit-form {
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+#todo-form p,
+#edit-form p {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#todo-form input,
+#edit-form input {
+    flex: 1;
+    margin-right: 3px;
+}
+
+.todo-control {
+    display: flex;
+}
+
+#btn-cancel {
+    margin-top: 10px;
+}
+
+.hide {
+    display: none;
+}
+
+/* Todo-List */
+.todo {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.8rem;
+}
+
+.done {
+    background-color: #404062;
+    color: #ffffff;
+}
+
+.done h3 {
+    font-style: italic;
+    text-decoration: line-through;
+}
+
+.todo h3 {
+    flex: 1;
+}
+
+.todo button {
+    margin-right: 3px;
+}
+
+
+
+
+
