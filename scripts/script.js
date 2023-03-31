@@ -1,137 +1,190 @@
-// Elementos
+//Elementos
+
+//Elementos do formulário To-do
 const todoForm = document.querySelector('#todo-form');
 const todoInput = document.querySelector('#todo-input');
 
+//Elementos do formulário Edição
 const editForm = document.querySelector('#edit-form');
 const editInput = document.querySelector('#edit-input');
 const btnCancel = document.querySelector('#btn-cancel');
 
+//To-do List
 const todoList = document.querySelector('#todo-list');
+
+//Toolbar
+const searchInput = document.querySelector('#search-input');
+const eraseBtn = document.querySelector('#erase-btn');
+const filterSelect = document.querySelector('#filter-select');
 
 let oldInputValue;
 
 //Funções
-const saveTodo = (text)=>{
 
-    const todoItem = createDivTodo();
-    const todoTitle = createTitleTodo(text);
-    const btnFinish = createBtnFinish();
-    const btnEdit = createBtnEdit();
-    const btnDelete = createBtnDelete();
+const saveTodo = (text) => {
+    const todoItem = document.createElement('div');
+    todoItem.classList.add('todo');
+
+    const todoTitle = document.createElement('h3');
+    todoTitle.innerText = text;
+
+    const btnFinish = document.createElement('button');
+    btnFinish.classList.add('finish-todo');
+    btnFinish.innerHTML = '<i class="fa-solid fa-check"></i>';
+
+    const btnEdit = document.createElement('button');
+    btnEdit.classList.add('edit-todo');
+    btnEdit.innerHTML = '<i class="fa-solid fa-pen"></i>';
+
+    const btnRemove = document.createElement('button');
+    btnRemove.classList.add('remove-todo');
+    btnRemove.innerHTML = '<i class="fa-solid fa-xmark"></i>';
 
     todoItem.appendChild(todoTitle);
     todoItem.appendChild(btnFinish);
     todoItem.appendChild(btnEdit);
-    todoItem.appendChild(btnDelete);
+    todoItem.appendChild(btnRemove);
 
-    todoList.appendChild(todoItem);
-    console.log(todoItem);  
+    todoList.prepend(todoItem);
 }
 
-const toggleForms = () => {
-    todoForm.classList.toggle('hide');
+
+const toggleForm = () =>{
     editForm.classList.toggle('hide');
+    todoForm.classList.toggle('hide');
     todoList.classList.toggle('hide');
 }
 
 const updateTodo = (text) => {
-    const todos = document.querySelectorAll('.todo');
+
+    let todos = document.querySelectorAll('.todo');
 
     todos.forEach((todo)=>{
-        let todoTitle = todo.querySelector('h3');
+        todoTitle = todo.querySelector('h3');
         if(todoTitle.innerText === oldInputValue){
             todoTitle.innerText = text;
         }
     })
 }
 
-function createBtnDelete() {
-    const btnDelete = document.createElement('button');
-    btnDelete.classList.add('remove-todo');
-    btnDelete.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-    return btnDelete;
+
+//Remover To-do
+function removeTodo(targetEl, parentEl) {
+    if (targetEl.classList.contains('remove-todo')) {
+        parentEl.remove();
+    }
 }
 
-function createBtnEdit() {
-    const btnEdit = document.createElement('button');
-    btnEdit.classList.add('edit-todo');
-    btnEdit.innerHTML = '<i class="fa-solid fa-pen"></i>';
-    return btnEdit;
+
+//Finalizar To-do
+function doneTodo(targetEl, parentEl) {
+    if (targetEl.classList.contains('finish-todo')) {
+        parentEl.classList.toggle('done');
+    }
 }
 
-function createBtnFinish() {
-    const btnFinish = document.createElement('button');
-    btnFinish.classList.add('finish-todo');
-    btnFinish.innerHTML = '<i class="fa-solid fa-check"></i>';
-    return btnFinish;
+const searchTodo = () => {
+    const inputValue = searchInput.value;
+    const todos = document.querySelectorAll('.todo');
+    if(inputValue) {
+        todos.forEach((todo)=>{
+            let todoTitle = (todo.querySelector('h3').innerText).toLowerCase();
+            let searchInput = inputValue.toLowerCase();
+            if(todoTitle.includes(searchInput)){
+                todo.style.display = 'flex';
+            } else {
+                todo.style.display = 'none';
+            }
+        })
+    }else {
+        todos.forEach((todo)=>{
+            todo.style.display = 'flex';
+        })
+    }
 }
 
-function createTitleTodo(text) {
-    const todoTitle = document.createElement('h3');
-    todoTitle.innerText = text;
-    return todoTitle;
-}
+const filterTodo = () => {
+    const todoDone = document.querySelectorAll('#filter-select')[0][1];
+    const todoDo = document.querySelectorAll('#filter-select')[0][2];
+    const todos = document.querySelectorAll('.todo');
 
-function createDivTodo() {
-    const todoItem = document.createElement('div');
-    todoItem.classList.add('todo');
-    return todoItem;
+    todos.forEach((todo)=>{
+        if(todoDone.selected){
+            if(todo.classList.contains('done')){
+                todo.style.display = 'flex';
+            } else {
+                todo.style.display = 'none';
+            }
+        } else if (todoDo.selected){
+            if(!todo.classList.contains('done')){
+                todo.style.display = 'flex';
+            } else {
+                todo.style.display = 'none';
+            }
+        } else {
+            todo.style.display = 'flex';
+        }
+    })
 }
 
 //Eventos
+todoForm.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const inputValue = todoInput.value;
 
-todoForm.addEventListener('submit',(event)=>{
-    event.preventDefault();
-    if(todoInput.value){
-        saveTodo(todoInput.value);
+    if(inputValue){
+        saveTodo(inputValue);
     }
     todoInput.value = '';
     todoInput.focus();
 })
 
 document.addEventListener('click',(element)=>{
-
     const targetEl = element.target;
     const parentEl = targetEl.closest('div');
 
     let todoTitle;
+    
+    doneTodo(targetEl, parentEl);
 
-    if(targetEl.classList.contains('finish-todo')){
-        parentEl.classList.toggle('done');
-    }
-
-    if(targetEl.classList.contains('remove-todo')){
-        parentEl.remove();
-    }
-
-    if (targetEl.classList.contains('edit-todo')){
+    if(targetEl.classList.contains('edit-todo')){
         if(parentEl.querySelector('h3')){
             todoTitle = parentEl.querySelector('h3').innerText;
         }
         editInput.value = todoTitle;
         oldInputValue = todoTitle;
-        toggleForms();
+        toggleForm();
     }
+
+    removeTodo(targetEl, parentEl);
+
 })
 
-editForm.addEventListener('submit',(event)=>{
-    event.preventDefault();
+editForm.addEventListener('submit',(e)=>{
+    e.preventDefault();
 
-    const editInputValue = editInput.value
+    let editInputValue = editInput.value;
     if(editInputValue){
         updateTodo(editInputValue);
     }
-    toggleForms();
+   
+    toggleForm();
+
 })
 
-btnCancel.addEventListener('click',(event)=>{
-    event.preventDefault();
-    toggleForms();
+btnCancel.addEventListener('click',(e)=>{
+    e.preventDefault();
+    toggleForm();
 })
 
+searchInput.addEventListener('input',searchTodo);
+
+eraseBtn.addEventListener('click',(e)=>{
+    e.preventDefault();
+    searchInput.value = '';
+    searchTodo();
+})
+
+filterSelect.addEventListener('change',filterTodo);
 
 document.querySelector('footer p').innerText += ` - ${new Date().getFullYear()}`;
-
-
-
-
