@@ -19,9 +19,61 @@ const filterSelect = document.querySelector('#filter-select');
 
 let oldInputValue;
 
-//Funções
+class TodoItem {
+    constructor(title, done, id) {
+        this.title = title;
+        this.done = done;
+        this.id = id;
+    }
+}
 
-const saveTodo = (text) => {
+class Db {
+    constructor() {
+        let id = localStorage.getItem('idT');
+        if(id === null){
+            localStorage.setItem('idT',0);
+        }
+    }
+
+    getNextId() {
+        let nextId = localStorage.getItem('idT');
+        return (Number(nextId)+1);
+    }
+
+    insertTodo(item){
+        let id = this.getNextId();
+        localStorage.setItem(`todo@${id}`, item);
+        localStorage.setItem('idT', id);
+    }
+
+    loadTodo(){
+        let id = localStorage.getItem('idT');
+        let todoItems = [];
+        for (let i = 1; i <= id; i++) {
+            let todoItem = JSON.parse(localStorage.getItem(`todo@${i}`));
+            
+            if(todoItem == null){
+                continue;
+            }
+
+            todoItems.push(
+                todoItem
+            )
+        }
+        return todoItems
+    }
+
+    updateTodo(id, todo){
+        localStorage.setItem(`todo@${id}`, JSON.stringify(todo));
+    }
+
+}
+
+let db = new Db();
+
+//Funções
+const saveTodo = (text, load = false, done = false) => {
+
     const todoItem = document.createElement('div');
     todoItem.classList.add('todo');
 
@@ -46,8 +98,19 @@ const saveTodo = (text) => {
     todoItem.appendChild(btnRemove);
 
     todoList.prepend(todoItem);
-}
 
+    let id = db.getNextId()
+    
+    if(load == false){
+        let objTodoItem = new TodoItem(text, false, id);
+        db.insertTodo(JSON.stringify(objTodoItem));
+        console.log(objTodoItem);
+    }
+
+    if(done) {
+        todoItem.classList.add('done');
+    }
+}
 
 const toggleForm = () =>{
     editForm.classList.toggle('hide');
@@ -56,30 +119,55 @@ const toggleForm = () =>{
 }
 
 const updateTodo = (text) => {
-
     let todos = document.querySelectorAll('.todo');
+    let todosLS = db.loadTodo();
 
     todos.forEach((todo)=>{
-        todoTitle = todo.querySelector('h3');
+        let todoTitle = todo.querySelector('h3');
         if(todoTitle.innerText === oldInputValue){
-            todoTitle.innerText = text;
+            todosLS.map((todoLS)=>{
+                if(todoLS.title === oldInputValue){
+                    todoTitle.innerText = text;
+                    let objTodoItem = new TodoItem(text, todoLS.done, todoLS.id);
+                    db.updateTodo(todoLS.id, objTodoItem);
+                }
+            })
         }
     })
 }
 
-
 //Remover To-do
 function removeTodo(targetEl, parentEl) {
     if (targetEl.classList.contains('remove-todo')) {
-        parentEl.remove();
+
+        let todoTitle = parentEl.querySelector('h3').innerText;
+        let todos = db.loadTodo();
+        todos.map((todo)=>{
+            if(todo.title == todoTitle){
+                let id = todo.id;
+                parentEl.remove();
+                localStorage.removeItem(`todo@${id}`)
+            }
+        })
     }
 }
 
-
 //Finalizar To-do
 function doneTodo(targetEl, parentEl) {
+    
     if (targetEl.classList.contains('finish-todo')) {
         parentEl.classList.toggle('done');
+        let todoTitle = parentEl.querySelector('h3').innerText;
+        let todos = db.loadTodo();
+
+        todos.forEach((todo) => {
+            if(todo.title === todoTitle){
+                let id = todo.id;
+                let done = todo.done == true ? false : true;
+                let objTodoItem = new TodoItem(todoTitle, done, id);
+                db.updateTodo(id, objTodoItem);
+            }
+        })        
     }
 }
 
@@ -103,26 +191,26 @@ const searchTodo = () => {
     }
 }
 
-const filterTodo = () => {
-    const todoDone = document.querySelectorAll('#filter-select')[0][1];
-    const todoDo = document.querySelectorAll('#filter-select')[0][2];
-    const todos = document.querySelectorAll('.todo');
+const filterTodo = () => {    
+    const todos = document.querySelectorAll('.todo')
 
     todos.forEach((todo)=>{
-        if(todoDone.selected){
-            if(todo.classList.contains('done')){
+        todo.style.display = 'none';
+        switch(filterSelect.value){
+            case 'done':
+                todo.classList.contains('done') ?
+                todo.style.display = 'flex' : 
+                'none';
+                break;
+
+            case 'todo':
+                !todo.classList.contains('done') ?
+                todo.style.display = 'flex' : 
+                'none';
+                break;
+
+            default:
                 todo.style.display = 'flex';
-            } else {
-                todo.style.display = 'none';
-            }
-        } else if (todoDo.selected){
-            if(!todo.classList.contains('done')){
-                todo.style.display = 'flex';
-            } else {
-                todo.style.display = 'none';
-            }
-        } else {
-            todo.style.display = 'flex';
         }
     })
 }
@@ -155,9 +243,7 @@ document.addEventListener('click',(element)=>{
         oldInputValue = todoTitle;
         toggleForm();
     }
-
     removeTodo(targetEl, parentEl);
-
 })
 
 editForm.addEventListener('submit',(e)=>{
@@ -167,9 +253,7 @@ editForm.addEventListener('submit',(e)=>{
     if(editInputValue){
         updateTodo(editInputValue);
     }
-   
     toggleForm();
-
 })
 
 btnCancel.addEventListener('click',(e)=>{
@@ -183,8 +267,17 @@ eraseBtn.addEventListener('click',(e)=>{
     e.preventDefault();
     searchInput.value = '';
     searchTodo();
-})
+});
 
 filterSelect.addEventListener('change',filterTodo);
+
+function loadTodoListLS(){
+    let todosLS = db.loadTodo();
+    todosLS.map((todo)=>{
+        saveTodo(todo.title, true, todo.done);
+    })
+}
+
+loadTodoListLS();
 
 document.querySelector('footer p').innerText += ` - ${new Date().getFullYear()}`;
